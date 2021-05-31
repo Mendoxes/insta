@@ -1,7 +1,7 @@
 import Firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
-import {seedDatabase} from "../seed";
+// import {seedDatabase} from "../seed";
 const config ={  apiKey: "AIzaSyCXIO7-lM1ndRKjUYML-lrZhJDg8qTu_2Q",
 authDomain: "insta-19c9c.firebaseapp.com",
 projectId: "insta-19c9c",
@@ -13,5 +13,5 @@ const firebase = Firebase.initializeApp(config);
 const {FieldValue} = Firebase.firestore;
 
 
-seedDatabase(firebase)
+// seedDatabase(firebase)  run once for the love of god 
 export {firebase, FieldValue}
