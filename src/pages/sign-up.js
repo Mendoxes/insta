@@ -2,15 +2,14 @@ import { useState, useContext, useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import FirebaseContext from '../context/firebase';
 import * as ROUTES from '../constants/routes';
-import {doesUsernameExist} from "../services/firebase"
+import { doesUsernameExist } from '../services/firebase';
 
 export default function SignUp() {
   const history = useHistory();
   const { firebase } = useContext(FirebaseContext);
 
-
-  const [username,setUsername] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
 
@@ -20,44 +19,45 @@ export default function SignUp() {
   const handleSignUp = async (event) => {
     event.preventDefault();
 
+    const usernameExists = await doesUsernameExist(username);
+    if (!usernameExists) {
+      try {
+        const createdUserResult = await firebase
+          .auth()
+          .createUserWithEmailAndPassword(emailAddress, password);
 
-    const usernameExists = await doesUsernameExist(username); //function for it exist in services firebase.js
-    if (!usernameExists.length){
-    try {
-      const createdUserResoult = await firebase
-      .auth()
-      .createUserWithEmailAndPassword(emailAddress,password) //crateuser with exist as firebase function
+        // authentication
+        // -> emailAddress & password & username (displayName)
+        await createdUserResult.user.updateProfile({
+          displayName: username
+        });
 
-      //here we do email adress password and username, username is called displayName in firebase 
-    //so we have to set displayName as our username 
-await createdUserResoult.user.updateProfile({
-  displayName:username
-})
-    await firebase.firestore().collection("users").add({
+        // firebase user collection (create a document)
+        await firebase
+          .firestore()
+          .collection('users')
+          .add({
+            userId: createdUserResult.user.uid,
+            username: username.toLowerCase(),
+            fullName,
+            emailAddress: emailAddress.toLowerCase(),
+            following: ['2'],
+            followers: [],
+            dateCreated: Date.now()
+          });
 
-      userId:createdUserResoult.user.uid, //uid is the 3hjhefsdfy73 code from your firebase
-      username:username.toLowerCase(),
-      fullName,
-      emailAddress: emailAddress.toLowerCase(),
-      following:[],
-      dateCreated:Date.now()
-    });
-    history.push(ROUTES.DASHBOARD)
-    } catch (error) {
-     setFullName("")
-     setEmailAddress("")
-     setUsername("")
-     setPassword("")
-     setError(error.message)
-
+        history.push(ROUTES.DASHBOARD);
+      } catch (error) {
+        setFullName('');
+        setEmailAddress('');
+        setPassword('');
+        setError(error.message);
+      }
+    } else {
+      setUsername('');
+      setError('That username is already taken, please try another.');
     }
-  }else{
-
-    setError("That username is taken please try another")
-  }
-
-
-};
+  };
 
   useEffect(() => {
     document.title = 'Sign Up - Instagram';
@@ -78,38 +78,36 @@ await createdUserResoult.user.updateProfile({
 
           <form onSubmit={handleSignUp} method="POST">
             <input
-              aria-label="Enter your username"   //accesibility stuff important
+              aria-label="Enter your username"
               type="text"
               placeholder="Username"
               className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
               onChange={({ target }) => setUsername(target.value)}
               value={username}
             />
-             <input
-              aria-label="Enter your full name"   //accesibility stuff important
+            <input
+              aria-label="Enter your full name"
               type="text"
-              placeholder="Full Name"
+              placeholder="Full name"
               className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
               onChange={({ target }) => setFullName(target.value)}
-              value={fullName }
+              value={fullName}
             />
-
-<input
-              aria-label="Enter your email adress"   //accesibility stuff important
+            <input
+              aria-label="Enter your email address"
               type="text"
-              placeholder="Email adress"
+              placeholder="Email address"
               className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
               onChange={({ target }) => setEmailAddress(target.value)}
-              value={emailAddress }
+              value={emailAddress}
             />
-
             <input
               aria-label="Enter your password"
               type="password"
               placeholder="Password"
               className="text-sm text-gray-base w-full mr-3 py-5 px-4 h-2 border border-gray-primary rounded mb-2"
               onChange={({ target }) => setPassword(target.value)}
-              value={password }
+              value={password}
             />
             <button
               disabled={isInvalid}
@@ -123,9 +121,9 @@ await createdUserResoult.user.updateProfile({
         </div>
         <div className="flex justify-center items-center flex-col w-full bg-white p-4 rounded border border-gray-primary">
           <p className="text-sm">
-            Have an accout?{` `}
+            Have an account?{` `}
             <Link to={ROUTES.LOGIN} className="font-bold text-blue-medium">
-              Log in
+              Login
             </Link>
           </p>
         </div>
