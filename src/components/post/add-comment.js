@@ -4,11 +4,18 @@ import FirebaseContext from '../../context/firebase';
 import UserContext from '../../context/user';
 
 export default function AddComment({ docId, comments, setComments, commentInput }) {
+  console.log(setComments);
   const [comment, setComment] = useState('');
   const { firebase, FieldValue } = useContext(FirebaseContext);
   const {
     user: { displayName }
   } = useContext(UserContext);
+
+
+
+
+
+  
 
   const handleSubmitComment = (event) => {
     event.preventDefault();
@@ -53,6 +60,9 @@ export default function AddComment({ docId, comments, setComments, commentInput 
         >
           Post
         </button>
+
+
+
       </form>
     </div>
   );
